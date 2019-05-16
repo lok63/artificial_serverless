@@ -13,8 +13,11 @@ AWS_DEFAULT_REGION  = os.environ['AWS_DEFAULT_REGION']
 
 class DynamoDB():
 
-    def __init__(self):
-        pass
+    def __init__(self, db_name):
+        self.db_name = db_name
+        self.existing_tables = client.list_tables()['TableNames']
+
+        
 
 
     def pd_to_json(self, df):
@@ -60,7 +63,7 @@ class DynamoDB():
                                             region_name=AWS_DEFAULT_REGION)
 
         dynamodb = boto3.resource('dynamodb')
-        db = dynamodb.Table('customer')
+        db = dynamodb.Table(self.db_name)
         
 
         with db.batch_writer() as batch:
@@ -70,112 +73,45 @@ class DynamoDB():
                 batch.put_item(Item=item)
 
 
-    def deleteTable(self,table_name):
-        print('deleting table')
-        # table = dynamodb.Table(table_name)
-        # table.delete()
-        return client.delete_table(TableName=table_name)
+    def deleteTable(self):
+        if self.db_name in self.existing_tables:
+            print('deleting table')
+            return client.delete_table(TableName=self.db_name)
 
 
-    def createTable(self,table_name):
-        waiter = client.get_waiter('table_not_exists')
-        waiter.wait(TableName=table_name)
-        print('creating table')
-        table = client.create_table(
-            TableName=table_name,
-            KeySchema=[
-                {
-                    'AttributeName': 'id',
-                    'KeyType': 'HASH'
+    def createTable(self):
+        print("################")
+        print("Creating new table")
+
+        # waiter = client.get_waiter('table_not_exists')
+        # waiter.wait(TableName=self.db_name)
+
+
+        if self.db_name not in self.existing_tables:
+            print('creating table')
+
+            response  = client.create_table(
+                TableName=self.db_name,
+                KeySchema=[
+                    {
+                        'AttributeName': 'id',
+                        'KeyType': 'HASH'
+                    }
+                ],
+                AttributeDefinitions= [],
+                ProvisionedThroughput={
+                    'ReadCapacityUnits': 5,
+                    'WriteCapacityUnits': 100
                 },
-                { 
-                    "AttributeName": 'attribute_name_1', 
-                    "KeyType": 'RANGE', 
+                StreamSpecification={
+                    'StreamEnabled': False
                 }
-            ],
-            AttributeDefinitions= [
-                {
-                    'AttributeName': 'age',
-                    'AttributeType': 'N'
-                },
-                {
-                    'AttributeName': 'job',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'marital',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'education',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'default',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'balance',
-                    'AttributeType': 'N'
-                },
-                {
-                    'AttributeName': 'housing',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'loan',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'contact',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'day',
-                    'AttributeType': 'N'
-                },
-                {
-                    'AttributeName': 'month',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'duration',
-                    'AttributeType': 'N'
-                },
-                {
-                    'AttributeName': 'campaign',
-                    'AttributeType': 'N'
-                },
-                {
-                    'AttributeName': 'pdays',
-                    'AttributeType': 'N'
-                },
-                {
-                    'AttributeName': 'previous',
-                    'AttributeType': 'N'
-                },
-                {
-                    'AttributeName': 'poutcome',
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'y',
-                    'AttributeType': 'S'
-                }
-            ],
-            ProvisionedThroughput={
-                'ReadCapacityUnits': 1,
-                'WriteCapacityUnits': 1
-            },
-            StreamSpecification={
-                'StreamEnabled': False
-            }
-        )
+            )
 
 
-    def emptyTable(self, table_name):
-        self.deleteTable(table_name)
-        #createTable(table_name)
+    def emptyTable(self):
+        self.deleteTable()
+        self.createTable()
 
 
 

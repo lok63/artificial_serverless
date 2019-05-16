@@ -40,8 +40,6 @@ def upload_csv():
 
         file = request.files['file']
 
-
-        # print(type(str(file.read(), 'utf-8')))
         str_file = str(file.read(), 'utf-8')
         f = io.StringIO(str_file)
 
@@ -53,26 +51,13 @@ def upload_csv():
 
 
 
-        dynamoDBClient = DynamoDBClient.DynamoDB()
+        dynamoDBClient = DynamoDBClient.DynamoDB(db_name="customers2")
 
-        thread = threading.Thread(target=dynamoDBClient.convert_pd_to_json_list(df))
-        thread.start()
-
+        # thread = threading.Thread(target=dynamoDBClient.convert_pd_to_json_list(df))
+        # thread.start()
+        dynamoDBClient.emptyTable()
+        dynamoDBClient.convert_pd_to_json_list(df)
         dynamoDBClient.batch_write()
 
 
-        return render_template("upload_csv.html", name = "upload_csv")
-
-
-
-        # if file:
-        #     try:
-                
-
-        #         # s3 = boto3.resource('s3')
-        #         # s3.meta.client.upload_file(file.name, 'artificial-demo', 'data/bank-full.csv')
-                
-        #         print("################")
-        #         print("Upload Completed")
-        #     except Exception as e:
-        #         print(e)
+        return "file has been uploaded to Dynamo"
