@@ -3,6 +3,7 @@
 ## How to run usign the AWS service
 
 #### Upload a csv file to DynamoDB
+**Note** This process will take on average 5 minutes to complete since i changed the write buffer to reduce cost
 https://fmj5rqsbf0.execute-api.eu-west-2.amazonaws.com/dev/upload_csv
 
 #### Prediction
