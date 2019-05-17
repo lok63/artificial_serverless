@@ -1,4 +1,4 @@
-# Sererless Application Using AWS Lambda, DynamoDB and flask
+# Sererless Application Using AWS Lambda, DynamoDB, S3 and flask
 
 ## How to run usign the AWS service
 
