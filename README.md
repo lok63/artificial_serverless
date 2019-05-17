@@ -3,8 +3,9 @@
 ## How to run usign the AWS service
 
 #### Upload a csv file to DynamoDB
-**Note** This process will take on average 5 minutes to complete since i changed the write buffer to reduce cost
-https://fmj5rqsbf0.execute-api.eu-west-2.amazonaws.com/dev/upload_csv
+**Note** : This process won't work on the server since the policy of Amazon API Gateway has a limnit of 30seconds and the POST re. However this process works when you run it locally. I could solve this issue by uploading the csv file on S3 first and then run the butch write command in the background. 
+
+<del>https://fmj5rqsbf0.execute-api.eu-west-2.amazonaws.com/dev/upload_csv</del>
 
 #### Prediction
 Open your terminal and type the following command:
