@@ -3,6 +3,9 @@ import boto3
 from boto3.session import Session
 from boto3.dynamodb.conditions import Key, Attr
 import os
+import ast
+import json
+import decimal
 dynamodb = boto3.resource('dynamodb')
 client = boto3.client('dynamodb', region_name='eu-west-2')
 
@@ -10,6 +13,22 @@ client = boto3.client('dynamodb', region_name='eu-west-2')
 ACCESS_KEY = os.environ['AWS_ACCESS_KEY_ID']
 SECRET_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 AWS_DEFAULT_REGION  = os.environ['AWS_DEFAULT_REGION']
+
+boto3.dynamodb_session = Session(aws_access_key_id=ACCESS_KEY,
+                                    aws_secret_access_key=SECRET_KEY,
+                                    region_name=AWS_DEFAULT_REGION)
+
+dynamodb = boto3.resource('dynamodb')
+
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            if abs(o) % 1 > 0:
+                return float(o)
+            else:
+                return int(o)
+        return super(DecimalEncoder, self).default(o)
 
 class DynamoDB():
 
@@ -20,8 +39,18 @@ class DynamoDB():
         
 
 
-    def pd_to_json(self, df):
-        self.json_data = df.to_json(orient='records')
+    def get_all_items(self):
+        ''' Deserialise DynamoDB data and return a list of dictionaries '''
+        db = dynamodb.Table(self.db_name)
+        low_level_data = db.scan()
+    
+        #Desirialise data
+        python_data=[]
+        for i in low_level_data['Items']:
+            python_data.append( ast.literal_eval((json.dumps(i, cls=DecimalEncoder))) )
+
+        return python_data
+
 
     def convert_pd_to_json_list(self,df):
         items = []    
@@ -58,11 +87,7 @@ class DynamoDB():
 
     def batch_write(self):
         items = self.json_data
-        boto3.dynamodb_session = Session(aws_access_key_id=ACCESS_KEY,
-                                            aws_secret_access_key=SECRET_KEY,
-                                            region_name=AWS_DEFAULT_REGION)
 
-        dynamodb = boto3.resource('dynamodb')
         db = dynamodb.Table(self.db_name)
         
 
@@ -77,7 +102,6 @@ class DynamoDB():
         if self.db_name in self.existing_tables:
             print('deleting table')
             return client.delete_table(TableName=self.db_name)
-
 
     def createTable(self):
         print("################")
@@ -98,7 +122,11 @@ class DynamoDB():
                         'KeyType': 'HASH'
                     }
                 ],
-                AttributeDefinitions= [],
+                AttributeDefinitions= [
+                    {
+                        'AttributeName': 'id',
+                        'AttributeType': 'N'
+                    }],
                 ProvisionedThroughput={
                     'ReadCapacityUnits': 5,
                     'WriteCapacityUnits': 100
@@ -112,6 +140,5 @@ class DynamoDB():
     def emptyTable(self):
         self.deleteTable()
         self.createTable()
-
 
 

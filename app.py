@@ -7,7 +7,9 @@ import csv
 import io
 import pandas as pd
 import threading
-
+import machine_learning
+from pandas.io.json import json_normalize
+import numpy as np
 app = Flask(__name__)
 
 
@@ -17,16 +19,58 @@ AWS_DEFAULT_REGION  = os.environ['AWS_DEFAULT_REGION']
 
 @app.route('/')
 def api_root():
-    return 'Welcome'
+    string = '''
+    Welcome to this demo \n
+    /upload_csv to upload the bank-full to DynamoDB - NoSQL
+    /predict to make a prediction
+    '''
+
+    return string
+
+
+@app.route('/predict', methods=['GET','POST'])
+def predict():
+    ''' 
+    curl --header "Content-Type: application/json" --request POST --data '{"age":"35","job":"management","martial":"married","education":"secondary","default":"no","balance":"2143","housing":"yes","loan":"no","contact":"unknown","day":"5","month":"may","duration":"261","campaign":"1","pdays":"-1","previous":"0","poutcome":"unknown"}' http://localhost:5000/predict
+    
+    '''
+
+
+    if request.method == 'POST':
+        content = request.json
+        new_record = json_normalize(content)
+        
+        #Assign correct dtypes to the new row we just recieved
+        num_col= ["age","balance","day","duration","campaign","pdays","previous"]
+        new_record[num_col] = new_record[num_col].apply(pd.to_numeric)
+        new_record["y"] = "no"
+
+        xgb = machine_learning.ML()
+        old_dataset = xgb.data.drop(["id"],axis=1)
+
+        #append the latest record to the dataset we already have for pre-processing
+        combined_dataset= old_dataset.append(new_record).reset_index()
+        
+
+        xgb.pre_process(combined_dataset)
+        y_pred, y_proba = xgb.predict()
+
+        y_pred= "No" if y_pred[0] == 0 else "Yes"
+        y_proba = np.round(float(y_proba[0][1]), decimals=2)
+
+        return "Prediction: {}, Probability {}".format(y_pred, y_proba)
+    
+    
+    xgb = machine_learning.ML()
+
+
+    return str(xgb.data)
+
+
 
 @app.route('/upload_csv', methods=['GET','POST'])
 def upload_csv():
-    ''' curl -F ‘data=data/bank-full.csv’ 127.0.0.1:5000/upload_csv 
-        curl -F ‘data=@data/bank-full.csv’ 127.0.0.1:5000/upload_csv 
-        curl -i -X POST -F "files=@$data/bank-full.csv" 127.0.0.1:5000/upload_csv 
-        curl -d "data=bankFull" 127.0.0.1:5000/upload_csv 
-        curl --request POST --data-binary "@bankFull.csv" $127.0.0.1:5000/upload_csv
-    '''
+
 
     if request.method == 'GET':
         return render_template("upload_csv.html", name = "upload_csv")
@@ -60,4 +104,4 @@ def upload_csv():
         dynamoDBClient.batch_write()
 
 
-        return "file has been uploaded to Dynamo"
+        return "file has been uploaded to DynamoDB"
