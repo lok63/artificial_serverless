@@ -1,9 +1,14 @@
 # Sererless Application Using AWS Lambda, DynamoDB and flask
 
+## How to run usign the AWS service
 
-## Prediction
-You can use the following example to make prediction:
-**Locally** :     curl --header "Content-Type: application/json" --request POST --data '{"age":"35","job":"management","martial":"married","education":"secondary","default":"no","balance":"2143","housing":"yes","loan":"no","contact":"unknown","day":"5","month":"may","duration":"261","campaign":"1","pdays":"-1","previous":"0","poutcome":"unknown"}' http://localhost:5000/predict
+#### Upload a csv file to DynamoDB
+https://fmj5rqsbf0.execute-api.eu-west-2.amazonaws.com/dev/upload_csv
+
+#### Prediction
+Open your terminal and type the following command:
+
+    curl --header "Content-Type: application/json" --request POST --data '{"age":"35","job":"management","martial":"married","education":"secondary","default":"no","balance":"2143","housing":"yes","loan":"no","contact":"unknown","day":"5","month":"may","duration":"261","campaign":"1","pdays":"-1","previous":"0","poutcome":"unknown"}' https://fmj5rqsbf0.execute-api.eu-west-2.amazonaws.com/dev/predict
 
 
 ## How to run locally
@@ -35,5 +40,4 @@ Run the application:
 To access the application go to http://127.0.0.1:5000/upload_csv
 
 #### Prediction
-You can use the following example to make prediction:
-**Locally** :     curl --header "Content-Type: application/json" --request POST --data '{"age":"35","job":"management","martial":"married","education":"secondary","default":"no","balance":"2143","housing":"yes","loan":"no","contact":"unknown","day":"5","month":"may","duration":"261","campaign":"1","pdays":"-1","previous":"0","poutcome":"unknown"}' http://localhost:5000/predict
+    curl --header "Content-Type: application/json" --request POST --data '{"age":"35","job":"management","martial":"married","education":"secondary","default":"no","balance":"2143","housing":"yes","loan":"no","contact":"unknown","day":"5","month":"may","duration":"261","campaign":"1","pdays":"-1","previous":"0","poutcome":"unknown"}' http://localhost:5000/predict
