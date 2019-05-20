@@ -1,5 +1,13 @@
 # Sererless Application Using AWS Lambda, DynamoDB, S3 and flask
 
+
+
+
+**NOTE** I have disabled the AWS services. If you wish to see this demo live please contact me to re-enable them
+
+
+
+
 ## How to run usign the AWS service
 
 #### Upload a csv file to DynamoDB
