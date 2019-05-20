@@ -3,7 +3,7 @@
 
 
 
-**NOTE** I have disabled the AWS services. If you wish to see this demo live please contact me to re-enable them
+**NOTE: I have disabled the AWS services. If you wish to see this demo live please contact me to re-enable them** 
 
 
 
